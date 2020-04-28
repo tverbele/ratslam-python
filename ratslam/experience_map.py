@@ -4,21 +4,21 @@
 # Renato de Pontes Pereira - rppereira@inf.ufrgs.br
 # =============================================================================
 # Copyright (c) 2013 Renato de Pontes Pereira, renato.ppontes at gmail dot com
-# 
-# Permission is hereby granted, free of charge, to any person obtaining a copy 
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights 
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
-# copies of the Software, and to permit persons to whom the Software is 
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in 
+# The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
@@ -26,6 +26,7 @@
 
 import numpy as np
 from ratslam._globals import *
+
 
 class Experience(object):
     '''A single experience.
@@ -55,8 +56,8 @@ class Experience(object):
         self.view_cell = view_cell
         self.links = []
 
-    def link_to(self, target, accum_delta_x, accum_delta_y, 
-                                             accum_delta_facing):
+    def link_to(self, target, accum_delta_x, accum_delta_y,
+                accum_delta_facing):
         '''Creates a link between this experience and a taget one.
 
         :param target: the target Experience object.
@@ -77,6 +78,7 @@ class Experience(object):
         link = ExperienceLink(self, target, facing_rad, d, heading_rad)
         self.links.append(link)
 
+
 class ExperienceLink(object):
     '''A representation of connection between experiences.'''
 
@@ -94,6 +96,7 @@ class ExperienceLink(object):
         self.d = d
         self.heading_rad = heading_rad
 
+
 class ExperienceMap(object):
     '''Experience Map module.'''
 
@@ -102,15 +105,15 @@ class ExperienceMap(object):
 
         self.size = 0
         self.exps = []
-        
+
         self.current_exp = None
         self.current_view_cell = None
 
         self.accum_delta_x = 0
         self.accum_delta_y = 0
-        self.accum_delta_facing = np.pi/2
+        self.accum_delta_facing = np.pi / 2
 
-        self.history = [] #?
+        self.history = []  # ?
 
     def _create_exp(self, x_pc, y_pc, th_pc, view_cell):
         '''Creates a new Experience object.
@@ -136,13 +139,13 @@ class ExperienceMap(object):
         exp = Experience(x_pc, y_pc, th_pc, x_m, y_m, facing_rad, view_cell)
 
         if self.current_exp is not None:
-            self.current_exp.link_to(exp, self.accum_delta_x, self.accum_delta_y, self.accum_delta_facing)
+            self.current_exp.link_to(
+                exp, self.accum_delta_x, self.accum_delta_y, self.accum_delta_facing)
 
         self.exps.append(exp)
         view_cell.exps.append(exp)
 
         return exp
-
 
     def __call__(self, view_cell, vtrans, vrot, x_pc, y_pc, th_pc):
         '''Run an interaction of the experience map.
@@ -157,15 +160,15 @@ class ExperienceMap(object):
 
         #% integrate the delta x, y, facing
         self.accum_delta_facing = clip_rad_180(self.accum_delta_facing + vrot)
-        self.accum_delta_x += vtrans*np.cos(self.accum_delta_facing)
-        self.accum_delta_y += vtrans*np.sin(self.accum_delta_facing)
+        self.accum_delta_x += vtrans * np.cos(self.accum_delta_facing)
+        self.accum_delta_y += vtrans * np.sin(self.accum_delta_facing)
 
         if self.current_exp is None:
             delta_pc = 0
         else:
             delta_pc = np.sqrt(
-                min_delta(self.current_exp.x_pc, x_pc, PC_DIM_XY)**2 + \
-                min_delta(self.current_exp.y_pc, y_pc, PC_DIM_XY)**2 + \
+                min_delta(self.current_exp.x_pc, x_pc, PC_DIM_XY)**2 +
+                min_delta(self.current_exp.y_pc, y_pc, PC_DIM_XY)**2 +
                 min_delta(self.current_exp.th_pc, th_pc, PC_DIM_TH)**2
             )
 
@@ -194,8 +197,8 @@ class ExperienceMap(object):
             n_candidate_matches = 0
             for (i, e) in enumerate(view_cell.exps):
                 delta_pc = np.sqrt(
-                    min_delta(e.x_pc, x_pc, PC_DIM_XY)**2 + \
-                    min_delta(e.y_pc, y_pc, PC_DIM_XY)**2 + \
+                    min_delta(e.x_pc, x_pc, PC_DIM_XY)**2 +
+                    min_delta(e.y_pc, y_pc, PC_DIM_XY)**2 +
                     min_delta(e.th_pc, th_pc, PC_DIM_TH)**2
                 )
                 delta_pcs.append(delta_pc)
@@ -220,10 +223,12 @@ class ExperienceMap(object):
                             link_exists = True
 
                     if not link_exists:
-                        self.current_exp.link_to(matched_exp, self.accum_delta_x, self.accum_delta_y, self.accum_delta_facing)
+                        self.current_exp.link_to(
+                            matched_exp, self.accum_delta_x, self.accum_delta_y, self.accum_delta_facing)
 
                 if matched_exp is None:
-                    matched_exp = self._create_exp(x_pc, y_pc, th_pc, view_cell)
+                    matched_exp = self._create_exp(
+                        x_pc, y_pc, th_pc, view_cell)
 
                 self.current_exp = matched_exp
                 self.accum_delta_x = 0
@@ -235,8 +240,7 @@ class ExperienceMap(object):
         if not adjust_map:
             return
 
-
-        # Iteratively update the experience map with the new information     
+        # Iteratively update the experience map with the new information
         for i in range(0, EXP_LOOPS):
             for e0 in self.exps:
                 for l in e0.links:
@@ -246,17 +250,17 @@ class ExperienceMap(object):
                     # info
 
                     e1 = l.target
-                    
+
                     # correction factor
                     cf = EXP_CORRECTION
-                    
-                    # work out where exp0 thinks exp1 (x,y) should be based on 
+
+                    # work out where exp0 thinks exp1 (x,y) should be based on
                     # the stored link information
                     lx = e0.x_m + l.d * np.cos(e0.facing_rad + l.heading_rad)
-                    ly = e0.y_m + l.d * np.sin(e0.facing_rad + l.heading_rad);
+                    ly = e0.y_m + l.d * np.sin(e0.facing_rad + l.heading_rad)
 
                     # correct e0 and e1 (x,y) by equal but opposite amounts
-                    # a 0.5 correction parameter means that e0 and e1 will be 
+                    # a 0.5 correction parameter means that e0 and e1 will be
                     # fully corrected based on e0's link information
                     e0.x_m = e0.x_m + (e1.x_m - lx) * cf
                     e0.y_m = e0.y_m + (e1.y_m - ly) * cf
@@ -265,15 +269,13 @@ class ExperienceMap(object):
 
                     # determine the angle between where e0 thinks e1's facing
                     # should be based on the link information
-                    df = signed_delta_rad(e0.facing_rad + l.facing_rad, 
+                    df = signed_delta_rad(e0.facing_rad + l.facing_rad,
                                           e1.facing_rad)
 
                     # correct e0 and e1 facing by equal but opposite amounts
-                    # a 0.5 correction parameter means that e0 and e1 will be 
-                    # fully corrected based on e0's link information           
+                    # a 0.5 correction parameter means that e0 and e1 will be
+                    # fully corrected based on e0's link information
                     e0.facing_rad = clip_rad_180(e0.facing_rad + df * cf)
                     e1.facing_rad = clip_rad_180(e1.facing_rad - df * cf)
-    
-        return
 
-        
+        return

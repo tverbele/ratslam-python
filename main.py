@@ -4,21 +4,21 @@
 # Renato de Pontes Pereira - rppereira@inf.ufrgs.br
 # =============================================================================
 # Copyright (c) 2013 Renato de Pontes Pereira, renato.ppontes at gmail dot com
-# 
-# Permission is hereby granted, free of charge, to any person obtaining a copy 
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights 
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
-# copies of the Software, and to permit persons to whom the Software is 
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in 
+# The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
@@ -36,7 +36,8 @@ the movie files. Thus, you can change only this file to use other media API.
 .. [2] https://github.com/coxlab/ratslam-python
 '''
 
-import cv2
+#import cv2
+import h5py
 import numpy as np
 from matplotlib import pyplot as plot
 import mpl_toolkits.mplot3d.axes3d as p3
@@ -44,39 +45,36 @@ import mpl_toolkits.mplot3d.axes3d as p3
 import ratslam
 
 if __name__ == '__main__':
-    # Change this line to open other movies
-    data = r'D:\Bkp\ratslam\data\stlucia_testloop.avi'
+    path = "/home/tverbele/Data/TMNT/scenario1/scenario1_1.h5"
+    data = h5py.File(path, "r")
 
-    video = cv2.VideoCapture(data)
     slam = ratslam.Ratslam()
-    
+
     loop = 0
-    _, frame = video.read()
+    frame = data["camera"][loop]
     while True:
         loop += 1
 
         # RUN A RATSLAM ITERATION ==================================
-        _, frame = video.read()
-        if frame is None: break
+        frame = data["camera"][loop]
+        if frame is None:
+            break
 
-        img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        img = np.average(frame, axis=2)
         slam.digest(img)
         # ==========================================================
 
         # Plot each 50 frames
-        if loop%50 != 0:
+        if loop % 50 != 0:
             continue
 
         # PLOT THE CURRENT RESULTS =================================
-        b, g, r = cv2.split(frame)
-        rgb_frame = cv2.merge([r, g, b])
-
         plot.clf()
 
         # RAW IMAGE -------------------
         ax = plot.subplot(2, 2, 1)
         plot.title('RAW IMAGE')
-        plot.imshow(rgb_frame)
+        plot.imshow(frame)
         ax.get_xaxis().set_ticks([])
         ax.get_yaxis().set_ticks([])
         # -----------------------------
@@ -93,12 +91,12 @@ if __name__ == '__main__':
         plot.title('POSE CELL ACTIVATION')
         x, y, th = slam.pc
         ax.plot(x, y, 'x')
-        ax.plot3D([0, 60], [y[-1], y[-1]], [th[-1], th[-1]], 'K')
-        ax.plot3D([x[-1], x[-1]], [0, 60], [th[-1], th[-1]], 'K')
-        ax.plot3D([x[-1], x[-1]], [y[-1], y[-1]], [0, 36], 'K')
+        ax.plot3D([0, 60], [y[-1], y[-1]], [th[-1], th[-1]], 'k')
+        ax.plot3D([x[-1], x[-1]], [0, 60], [th[-1], th[-1]], 'k')
+        ax.plot3D([x[-1], x[-1]], [y[-1], y[-1]], [0, 36], 'k')
         ax.plot3D([x[-1]], [y[-1]], [th[-1]], 'mo')
         ax.grid()
-        ax.axis([0, 60, 0, 60]);
+        ax.axis([0, 60, 0, 60])
         ax.set_zlim(0, 36)
         # -----------------------------
 
@@ -121,7 +119,7 @@ if __name__ == '__main__':
         plot.pause(0.1)
         # ==========================================================
 
-    print 'DONE!'
-    print 'n_ templates:', len(slam.view_cells.cells)
-    print 'n_ experiences:', len(slam.experience_map.exps)
+    print('DONE!')
+    print('n_ templates:', len(slam.view_cells.cells))
+    print('n_ experiences:', len(slam.experience_map.exps))
     plot.show()

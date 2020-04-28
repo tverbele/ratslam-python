@@ -4,21 +4,21 @@
 # Renato de Pontes Pereira - rppereira@inf.ufrgs.br
 # =============================================================================
 # Copyright (c) 2013 Renato de Pontes Pereira, renato.ppontes at gmail dot com
-# 
-# Permission is hereby granted, free of charge, to any person obtaining a copy 
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights 
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
-# copies of the Software, and to permit persons to whom the Software is 
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in 
+# The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
@@ -26,6 +26,7 @@
 
 import numpy as np
 from ratslam._globals import *
+
 
 class ViewCell(object):
     '''A single view cell.
@@ -53,6 +54,7 @@ class ViewCell(object):
 
         ViewCell._ID += 1
 
+
 class ViewCells(object):
     '''View Cell module.'''
 
@@ -72,7 +74,7 @@ class ViewCells(object):
         '''
         subimg = img[IMAGE_VT_Y_RANGE, IMAGE_VT_X_RANGE]
         x_sums = np.sum(subimg, 0)
-        return x_sums/np.sum(x_sums, dtype=np.float32)
+        return x_sums / np.sum(x_sums, dtype=np.float32)
 
     def _score(self, template):
         '''Compute the similarity of a given template with all view cells.
@@ -120,10 +122,11 @@ class ViewCells(object):
 
         # TO REMOVE
         if scores:
-            self.activated_cells = np.array(self.cells)[np.array(scores)*template.size<VT_MATCH_THRESHOLD]
+            self.activated_cells = np.array(self.cells)[np.array(
+                scores) * template.size < VT_MATCH_THRESHOLD]
         # ----
 
-        if not self.size or np.min(scores)*template.size > VT_MATCH_THRESHOLD:
+        if not self.size or np.min(scores) * template.size > VT_MATCH_THRESHOLD:
             cell = self.create_cell(template, x_pc, y_pc, th_pc)
             self.prev_cell = cell
             return cell
